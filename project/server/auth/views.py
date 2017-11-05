@@ -238,15 +238,52 @@ class CategoryListAPI(MethodView):
         if auth_token:
             resp = User.decode_auth_token(auth_token)
             if not isinstance(resp, str):
-                query = CategoryList.query.filter_by(user_id=resp)
-                a = []
+                #query = CategoryList.query.filter_by(user_id=resp)
+                result = CategoryList.query.with_entities(CategoryList.id, CategoryList.name).filter_by(user_id=1).all()
+                '''a = []
                 for i in query.all():
                     a.append(i.name)
                     print(i.name)
-                print(a) 
-                return make_response(jsonify(a)),200
+                print(a)''' 
+                return make_response(jsonify(result)),200
                 #return make_response(jsonify([i.serialize for i in query.all()])),200
 
+            responseObject = {
+                'status': 'fail',
+                'message': resp
+            }
+            return make_response(jsonify(responseObject)), 401
+        else:
+            responseObject = {
+                'status': 'fail',
+                'message': 'Provide a valid auth token.'
+            }
+            return make_response(jsonify(responseObject)), 401
+
+class GraphDataAPI(MethodView):
+    def get(self):
+        # get the auth token
+        auth_header = request.headers.get('Authorization')
+        if auth_header:
+            try:
+                auth_token = auth_header.split(" ")[1]
+            except IndexError:
+                responseObject = {
+                    'status': 'fail',
+                    'message': 'Bearer token malformed.'
+                }
+                return make_response(jsonify(responseObject)), 401
+        
+        else:
+            auth_token = ''
+        if auth_token:
+            resp = User.decode_auth_token(auth_token)
+            if not isinstance(resp, str):
+                #result = ExpenseList.query.with_entities(ExpenseList.name, ExpenseList.money_spent).filter_by(user_id=resp).all()
+                #return make_response(jsonify(result)),200
+                #return make_response(jsonify([i.serialize for i in query.all()])),200
+                query = ExpenseList.query.filter_by(user_id=resp)
+                return make_response(jsonify([i.graph_data for i in query.all()])),200
             responseObject = {
                 'status': 'fail',
                 'message': resp
@@ -264,6 +301,7 @@ class AddExpenseAPI(MethodView):
     def post(self):
         # get the post data
         post_data = request.get_json()
+        print(post_data)
         auth_header = request.headers.get('Authorization')
         if auth_header:
             try:
@@ -277,9 +315,12 @@ class AddExpenseAPI(MethodView):
         
         else:
             auth_token = ''
+            
         if auth_token:
             resp = User.decode_auth_token(auth_token)
+            print(resp)
             if not isinstance(resp, str):
+               
                 new_expense = ExpenseList(
                         name=post_data.get('name'),
                         money_spent = post_data.get('money_spent'),
@@ -359,6 +400,7 @@ expense_detail_view = ExpenseDetailsAPI.as_view('expense_detail_api')
 category_list_view = CategoryListAPI.as_view('category_list_api')
 add_expense_view = AddExpenseAPI.as_view('add_expense_api')
 add_category_view = AddCategoryAPI.as_view('add_category_api')
+graph_data_view = GraphDataAPI.as_view('graph_data_api')
 
 # add Rules for API Endpoints
 auth_blueprint.add_url_rule(
@@ -384,6 +426,11 @@ auth_blueprint.add_url_rule(
 auth_blueprint.add_url_rule(
     '/auth/user/categories',
     view_func=category_list_view,
+    methods=['GET']
+)
+auth_blueprint.add_url_rule(
+    '/auth/user/dashboard',
+    view_func=graph_data_view,
     methods=['GET']
 )
 auth_blueprint.add_url_rule(

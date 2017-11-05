@@ -139,5 +139,13 @@ class ExpenseList(db.Model):
             'name' : self.name,
             'is_recurring' : self.is_recurring
          }
+    @property
+    def graph_data(self):
+        return {
+            'name' : self.name,
+            'value' : self.money_spent,
+         }
+
+
 
 db.create_all()
