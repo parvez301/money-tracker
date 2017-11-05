@@ -112,6 +112,7 @@ class UserAPI(MethodView):
             auth_token = ''
         if auth_token:
             resp = User.decode_auth_token(auth_token)
+            
             if not isinstance(resp, str):
                 user = User.query.filter_by(id=resp).first()
                 responseObject = {
@@ -238,7 +239,13 @@ class CategoryListAPI(MethodView):
             resp = User.decode_auth_token(auth_token)
             if not isinstance(resp, str):
                 query = CategoryList.query.filter_by(user_id=resp)
-                return make_response(jsonify([i.serialize for i in query.all()])),200
+                a = []
+                for i in query.all():
+                    a.append(i.name)
+                    print(i.name)
+                print(a) 
+                return make_response(jsonify(a)),200
+                #return make_response(jsonify([i.serialize for i in query.all()])),200
 
             responseObject = {
                 'status': 'fail',
