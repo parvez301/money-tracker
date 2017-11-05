@@ -352,6 +352,7 @@ class AddCategoryAPI(MethodView):
     def post(self):
         # get the post data
         post_data = request.get_json()
+        print(post_data)
         auth_header = request.headers.get('Authorization')
         if auth_header:
             try:
