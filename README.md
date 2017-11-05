@@ -1,14 +1,5 @@
-# Flask JWT Auth
+Money Tracker Backend
 
-[![Build Status](https://travis-ci.org/realpython/flask-jwt-auth.svg?branch=master)](https://travis-ci.org/realpython/flask-jwt-auth)
-
-## Want to learn how to build this project?
-
-Check out the [blog post](https://realpython.com/blog/python/token-based-authentication-with-flask/).
-
-## Want to use this project?
-
-### Basics
 
 1. Fork/Clone
 1. Activate a virtualenv
@@ -34,15 +25,7 @@ Set a SECRET_KEY:
 $ export SECRET_KEY="change_me"
 ```
 
-### Create DB
 
-Create the databases in `psql`:
-
-```sh
-$ psql
-# create database flask_jwt_auth
-# create database flask_jwt_auth_test
-# \q
 ```
 
 Create the tables and run the migrations:
@@ -75,8 +58,12 @@ Without coverage:
 $ python manage.py test
 ```
 
-With coverage:
+### API EndPoints
 
-```sh
-$ python manage.py cov
-```
+/auth/login ``` login endpoint```
+/auth/register ``` register endpoint```
+/auth/status      ```check user status```
+/auth/user/expenses ```Expense list```
+/auth/user/categories ```categories List```
+/auth/user/add-expense ```Add New Expense```
+/auth/user/add-category ```Add New Category``` 
