@@ -60,10 +60,24 @@ $ python manage.py test
 
 ### API EndPoints
 
-> ``` /auth/login  login endpoint```
-> ``` /auth/register register endpoint```
-> ``` /auth/status      check user status```
-> ``` /auth/user/expenses Expense list```
-> ``` /auth/user/categories categories List```
-> ``` /auth/user/add-expense Add New Expense```
-> ``` /auth/user/add-category Add New Category``` 
+> ``` 
+> /auth/login  login endpoint
+>```
+> ``` 
+> /auth/register register endpoint
+> ```
+> ```
+> /auth/status      check user status
+> ```
+> ```
+> /auth/user/expenses Expense list
+> ```
+> ``` 
+> /auth/user/categories categories List
+> ```
+> ```
+> /auth/user/add-expense Add New Expense
+> ```
+> ```
+> /auth/user/add-category Add New Category
+> ``` 
