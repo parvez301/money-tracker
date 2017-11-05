@@ -1,6 +1,4 @@
 # project/server/models.py
-
-
 import jwt
 import datetime
 
@@ -32,7 +30,7 @@ class User(db.Model):
         """
         try:
             payload = {
-                'exp': datetime.datetime.utcnow() + datetime.timedelta(days=0, seconds=5),
+                'exp': datetime.datetime.utcnow() + datetime.timedelta(days=1, minutes=30, seconds=5),
                 'iat': datetime.datetime.utcnow(),
                 'sub': user_id
             }
@@ -89,3 +87,57 @@ class BlacklistToken(db.Model):
             return True
         else:
             return False
+
+
+class CategoryList(db.Model):
+    __tablename__ = 'category_list'
+
+    id = db.Column(db.Integer,primary_key = True, autoincrement=True)
+    name = db.Column(db.String(500), unique=True, autoincrement=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    created_on = db.Column(db.DateTime, nullable=False)
+
+    def __init__(self,name,user_id,created_on):
+        self.name = name
+        self.user_id = user_id
+        self.created_on = datetime.datetime.now()
+
+    @property
+    def serialize(self):
+        return {
+            'name' : self.name,
+            'id' : self.id,
+            'created_on' : self.created_on,
+            'user_id' : self.user_id
+         }
+
+class ExpenseList(db.Model):
+    __tablename__ = 'expense_list'
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    name = db.Column(db.String(500), unique=True, nullable=False)
+    money_spent = db.Column(db.String(500), nullable=False)
+    category_id = db.Column(db.Integer, db.ForeignKey('category_list.id'))
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    is_recurring = db.Column(db.Boolean,nullable=False, default=False)
+    created_on = db.Column(db.DateTime, nullable=False)
+
+    def __init__(self,name,money_spent,category_id,user_id,is_recurring,created_on):
+        self.name = name
+        self.money_spent = money_spent
+        self.category_id = category_id
+        self.user_id = user_id
+        self.is_recurring = is_recurring
+        self.created_on = datetime.datetime.now()
+
+    @property
+    def serialize(self):
+        return {
+            'money_spent' : self.money_spent,
+            'category' : self.category_id,
+            'created_on' : self.created_on,
+            'name' : self.name,
+            'is_recurring' : self.is_recurring
+         }
+
+db.create_all()

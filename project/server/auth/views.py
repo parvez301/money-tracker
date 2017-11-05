@@ -3,9 +3,9 @@
 
 from flask import Blueprint, request, make_response, jsonify
 from flask.views import MethodView
-
+import json
 from project.server import bcrypt, db
-from project.server.models import User, BlacklistToken
+from project.server.models import User, BlacklistToken,CategoryList,ExpenseList
 
 auth_blueprint = Blueprint('auth', __name__)
 
@@ -21,6 +21,7 @@ class RegisterAPI(MethodView):
         # check if user already exists
         user = User.query.filter_by(email=post_data.get('email')).first()
         if not user:
+            
             try:
                 user = User(
                     email=post_data.get('email'),
@@ -30,7 +31,9 @@ class RegisterAPI(MethodView):
                 db.session.add(user)
                 db.session.commit()
                 # generate the auth token
+                print("sa")
                 auth_token = user.encode_auth_token(user.id)
+                print("as")
                 responseObject = {
                     'status': 'success',
                     'message': 'Successfully registered.',
@@ -178,11 +181,177 @@ class LogoutAPI(MethodView):
             }
             return make_response(jsonify(responseObject)), 403
 
+class ExpenseDetailsAPI(MethodView):
+    # Expense List Resource
+
+    def get(self):
+        # get the auth token
+        auth_header = request.headers.get('Authorization')
+        if auth_header:
+            try:
+                auth_token = auth_header.split(" ")[1]
+            except IndexError:
+                responseObject = {
+                    'status': 'fail',
+                    'message': 'Bearer token malformed.'
+                }
+                return make_response(jsonify(responseObject)), 401
+        
+        else:
+            auth_token = ''
+        if auth_token:
+            resp = User.decode_auth_token(auth_token)
+            if not isinstance(resp, str):
+                query = ExpenseList.query.filter_by(user_id=resp)
+                return make_response(jsonify([i.serialize for i in query.all()])),200
+
+            responseObject = {
+                'status': 'fail',
+                'message': resp
+            }
+            return make_response(jsonify(responseObject)), 401
+        else:
+            responseObject = {
+                'status': 'fail',
+                'message': 'Provide a valid auth token.'
+            }
+            return make_response(jsonify(responseObject)), 401
+
+
+class CategoryListAPI(MethodView):
+    def get(self):
+        # get the auth token
+        auth_header = request.headers.get('Authorization')
+        if auth_header:
+            try:
+                auth_token = auth_header.split(" ")[1]
+            except IndexError:
+                responseObject = {
+                    'status': 'fail',
+                    'message': 'Bearer token malformed.'
+                }
+                return make_response(jsonify(responseObject)), 401
+        
+        else:
+            auth_token = ''
+        if auth_token:
+            resp = User.decode_auth_token(auth_token)
+            if not isinstance(resp, str):
+                query = CategoryList.query.filter_by(user_id=resp)
+                return make_response(jsonify([i.serialize for i in query.all()])),200
+
+            responseObject = {
+                'status': 'fail',
+                'message': resp
+            }
+            return make_response(jsonify(responseObject)), 401
+        else:
+            responseObject = {
+                'status': 'fail',
+                'message': 'Provide a valid auth token.'
+            }
+            return make_response(jsonify(responseObject)), 401
+
+
+class AddExpenseAPI(MethodView):
+    def post(self):
+        # get the post data
+        post_data = request.get_json()
+        auth_header = request.headers.get('Authorization')
+        if auth_header:
+            try:
+                auth_token = auth_header.split(" ")[1]
+            except IndexError:
+                responseObject = {
+                    'status': 'fail',
+                    'message': 'Bearer token malformed.'
+                }
+                return make_response(jsonify(responseObject)), 401
+        
+        else:
+            auth_token = ''
+        if auth_token:
+            resp = User.decode_auth_token(auth_token)
+            if not isinstance(resp, str):
+                new_expense = ExpenseList(
+                        name=post_data.get('name'),
+                        money_spent = post_data.get('money_spent'),
+                        category_id = post_data.get('catgegory_id'),
+                        user_id = resp,
+                        is_recurring = post_data.get('is_recurring'),
+                        created_on = 'now()'
+                    )
+                db.session.add(new_expense)
+                db.session.commit()
+                responseObject = {
+                'status': 'Expense Added',
+                'message': resp
+                }
+                return make_response(jsonify(responseObject)), 401
+                responseObject = {
+                'status': 'fail',
+                'message': resp
+                }
+            return make_response(jsonify(responseObject)), 401
+        else:
+            responseObject = {
+                'status': 'fail',
+                'message': 'Provide a valid auth token.'
+            }
+            return make_response(jsonify(responseObject)), 401
+            
+class AddCategoryAPI(MethodView):
+    def post(self):
+        # get the post data
+        post_data = request.get_json()
+        auth_header = request.headers.get('Authorization')
+        if auth_header:
+            try:
+                auth_token = auth_header.split(" ")[1]
+            except IndexError:
+                responseObject = {
+                    'status': 'fail',
+                    'message': 'Bearer token malformed.'
+                }
+                return make_response(jsonify(responseObject)), 401
+        
+        else:
+            auth_token = ''
+        if auth_token:
+            resp = User.decode_auth_token(auth_token)
+            if not isinstance(resp, str):
+                new_category = CategoryList(
+                        name=post_data.get('name'),
+                        user_id = resp,
+                        created_on = 'now()'
+                    )
+                db.session.add(new_category)
+                db.session.commit()
+                responseObject = {
+                'status': 'New Catgeory Successfully Added',
+                'message': resp
+                }
+                return make_response(jsonify(responseObject)), 401
+                responseObject = {
+                'status': 'fail',
+                'message': resp
+                }
+            return make_response(jsonify(responseObject)), 401
+        else:
+            responseObject = {
+                'status': 'fail',
+                'message': 'Provide a valid auth token.'
+            }
+            return make_response(jsonify(responseObject)), 401
 # define the API resources
 registration_view = RegisterAPI.as_view('register_api')
 login_view = LoginAPI.as_view('login_api')
 user_view = UserAPI.as_view('user_api')
 logout_view = LogoutAPI.as_view('logout_api')
+expense_detail_view = ExpenseDetailsAPI.as_view('expense_detail_api')
+category_list_view = CategoryListAPI.as_view('category_list_api')
+add_expense_view = AddExpenseAPI.as_view('add_expense_api')
+add_category_view = AddCategoryAPI.as_view('add_category_api')
 
 # add Rules for API Endpoints
 auth_blueprint.add_url_rule(
@@ -201,7 +370,29 @@ auth_blueprint.add_url_rule(
     methods=['GET']
 )
 auth_blueprint.add_url_rule(
+    '/auth/user/expenses',
+    view_func=expense_detail_view,
+    methods=['GET']
+)
+auth_blueprint.add_url_rule(
+    '/auth/user/categories',
+    view_func=category_list_view,
+    methods=['GET']
+)
+auth_blueprint.add_url_rule(
     '/auth/logout',
     view_func=logout_view,
     methods=['POST']
 )
+auth_blueprint.add_url_rule(
+    '/auth/user/add-expense',
+    view_func=add_expense_view,
+    methods=['POST']
+)
+auth_blueprint.add_url_rule(
+    '/auth/user/add-category',
+    view_func=add_category_view,
+    methods=['POST']
+)
+
+
