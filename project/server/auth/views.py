@@ -1,6 +1,4 @@
 # project/server/auth/views.py
-
-
 from flask import Blueprint, request, make_response, jsonify
 from flask.views import MethodView
 import json
@@ -223,7 +221,7 @@ class ExpenseDetailsAPI(MethodView):
 
 
 class CategoryListAPI(MethodView):
-    def post(self):
+    def get(self):
         # get the auth token
         auth_header = request.headers.get('Authorization')
         if auth_header:
