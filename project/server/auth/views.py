@@ -6,10 +6,10 @@ from flask.views import MethodView
 import json
 from project.server import bcrypt, db
 from project.server.models import User, BlacklistToken,CategoryList,ExpenseList
+from flask_cors import CORS
 
 auth_blueprint = Blueprint('auth', __name__)
-
-
+CORS(auth_blueprint)
 class RegisterAPI(MethodView):
     """
     User Registration Resource
@@ -91,7 +91,6 @@ class LoginAPI(MethodView):
             }
             return make_response(jsonify(responseObject)), 500
 
-
 class UserAPI(MethodView):
     """
     User Resource
@@ -115,6 +114,7 @@ class UserAPI(MethodView):
             
             if not isinstance(resp, str):
                 user = User.query.filter_by(id=resp).first()
+                #print(user)
                 responseObject = {
                     'status': 'success',
                     'data': {
@@ -136,6 +136,7 @@ class UserAPI(MethodView):
                 'message': 'Provide a valid auth token.'
             }
             return make_response(jsonify(responseObject)), 401
+
 
 
 class LogoutAPI(MethodView):
@@ -182,6 +183,7 @@ class LogoutAPI(MethodView):
             }
             return make_response(jsonify(responseObject)), 403
 
+
 class ExpenseDetailsAPI(MethodView):
     # Expense List Resource
 
@@ -219,8 +221,9 @@ class ExpenseDetailsAPI(MethodView):
             return make_response(jsonify(responseObject)), 401
 
 
+
 class CategoryListAPI(MethodView):
-    def get(self):
+    def post(self):
         # get the auth token
         auth_header = request.headers.get('Authorization')
         if auth_header:
@@ -260,6 +263,7 @@ class CategoryListAPI(MethodView):
             }
             return make_response(jsonify(responseObject)), 401
 
+
 class GraphDataAPI(MethodView):
     def get(self):
         # get the auth token
@@ -295,6 +299,7 @@ class GraphDataAPI(MethodView):
                 'message': 'Provide a valid auth token.'
             }
             return make_response(jsonify(responseObject)), 401
+
 
 
 class AddExpenseAPI(MethodView):
@@ -347,13 +352,18 @@ class AddExpenseAPI(MethodView):
                 'message': 'Provide a valid auth token.'
             }
             return make_response(jsonify(responseObject)), 401
-            
+
+           
 class AddCategoryAPI(MethodView):
     def post(self):
         # get the post data
         post_data = request.get_json()
         print(post_data)
+        print(request.headers)
         auth_header = request.headers.get('Authorization')
+        print("sd")
+        print(auth_header)
+        
         if auth_header:
             try:
                 auth_token = auth_header.split(" ")[1]
@@ -362,13 +372,15 @@ class AddCategoryAPI(MethodView):
                     'status': 'fail',
                     'message': 'Bearer token malformed.'
                 }
-                return make_response(jsonify(responseObject)), 401
-        
+                return make_response(jsonify(responseObject)), 401, {'Access-Control-Allow-Origin': '*'}
+                print(auth_token)
         else:
             auth_token = ''
+        
         if auth_token:
             resp = User.decode_auth_token(auth_token)
             if not isinstance(resp, str):
+                print(resp)
                 new_category = CategoryList(
                         name=post_data.get('name'),
                         user_id = resp,
@@ -380,18 +392,24 @@ class AddCategoryAPI(MethodView):
                 'status': 'New Catgeory Successfully Added',
                 'message': resp
                 }
-                return make_response(jsonify(responseObject)), 401
+                return make_response(jsonify(responseObject)), 201, {'Access-Control-Allow-Origin': '*'}
+            else:
                 responseObject = {
                 'status': 'fail',
                 'message': resp
                 }
-            return make_response(jsonify(responseObject)), 401
+                return make_response(jsonify(responseObject)), 401,{'Access-Control-Allow-Origin': '*'}
         else:
             responseObject = {
                 'status': 'fail',
                 'message': 'Provide a valid auth token.'
             }
-            return make_response(jsonify(responseObject)), 401
+            return make_response(jsonify(responseObject)), 401, {'Access-Control-Allow-Origin': '*'}
+
+    def options (self):
+        return {'Allow' : 'POST' }, 200, \
+        { 'Access-Control-Allow-Origin': '*', \
+        'Access-Control-Allow-Methods' : 'PUT,GET,POST' }
 # define the API resources
 registration_view = RegisterAPI.as_view('register_api')
 login_view = LoginAPI.as_view('login_api')

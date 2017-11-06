@@ -8,7 +8,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 
 app = Flask(__name__)
-CORS(app)
+CORS(app,resources={r"/auth/*": {"origins": "*"}})
 
 app_settings = os.getenv(
     'APP_SETTINGS',
