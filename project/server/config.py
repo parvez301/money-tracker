@@ -34,4 +34,4 @@ class ProductionConfig(BaseConfig):
     """Production configuration."""
     SECRET_KEY = 'my_precious'
     DEBUG = False
-    SQLALCHEMY_DATABASE_URI = 'postgresql:///example'
+    SQLALCHEMY_DATABASE_URI = 'postgres://jdalnfjentfojr:86fff49205bde31699f0f36846691d8222cb3ae497f4f220f0771f16a2374baa@ec2-107-22-167-179.compute-1.amazonaws.com:5432/depm5qq7j7on4'
