@@ -95,7 +95,7 @@ class CategoryList(db.Model):
     __tablename__ = 'category_list'
 
     id = db.Column(db.Integer,primary_key = True, autoincrement=True)
-    name = db.Column(db.String(500), unique=True, autoincrement=True)
+    name = db.Column(db.String(500), autoincrement=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     created_on = db.Column(db.DateTime, nullable=False)
 
