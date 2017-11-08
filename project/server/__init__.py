@@ -16,7 +16,6 @@ app_settings = os.getenv(
 )
 app.config.from_object(app_settings)
 def add_cors_headers(response):
-    
     response.headers['Access-Control-Allow-Origin'] = '*'
     if request.method == 'OPTIONS':
         response.headers['Access-Control-Allow-Methods'] = 'DELETE, GET, POST, PUT'
@@ -28,6 +27,5 @@ def add_cors_headers(response):
 app.after_request(add_cors_headers)
 bcrypt = Bcrypt(app)
 db = SQLAlchemy(app)
-print(db)
 from project.server.auth.views import auth_blueprint
 app.register_blueprint(auth_blueprint)

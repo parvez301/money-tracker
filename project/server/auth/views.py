@@ -22,9 +22,11 @@ class RegisterAPI(MethodView):
             
             try:
                 user = User(
+                    user_name=post_data.get('user_name'),
                     email=post_data.get('email'),
                     password=post_data.get('password')
                 )
+                print(user)
                 # insert the user
                 db.session.add(user)
                 db.session.commit()
@@ -241,7 +243,7 @@ class CategoryListAPI(MethodView):
             resp = User.decode_auth_token(auth_token)
             if not isinstance(resp, str):
                 #query = CategoryList.query.filter_by(user_id=resp)
-                result = CategoryList.query.with_entities(CategoryList.id, CategoryList.name).filter_by(user_id=1).all()
+                result = CategoryList.query.with_entities(CategoryList.id, CategoryList.name).filter_by(user_id=resp).all()
                 '''a = []
                 for i in query.all():
                     a.append(i.name)
@@ -330,7 +332,7 @@ class AddExpenseAPI(MethodView):
                 new_expense = ExpenseList(
                         name=post_data.get('name'),
                         money_spent = post_data.get('money_spent'),
-                        category_id = post_data.get('catgegory_id'),
+                        category_id = post_data.get('category_id'),
                         user_id = resp,
                         is_recurring = post_data.get('is_recurring'),
                         created_on = 'now()'

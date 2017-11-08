@@ -10,12 +10,14 @@ class User(db.Model):
     __tablename__ = "users"
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    user_name = db.Column(db.String(255), unique=True, nullable=False)
     email = db.Column(db.String(255), unique=True, nullable=False)
     password = db.Column(db.String(255), nullable=False)
     registered_on = db.Column(db.DateTime, nullable=False)
     admin = db.Column(db.Boolean, nullable=False, default=False)
 
-    def __init__(self, email, password, admin=False):
+    def __init__(self,  user_name,email, password, admin=False):
+        self.user_name = user_name
         self.email = email
         self.password = bcrypt.generate_password_hash(
             password, app.config.get('BCRYPT_LOG_ROUNDS')
@@ -117,7 +119,11 @@ class ExpenseList(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(500), unique=True, nullable=False)
     money_spent = db.Column(db.String(500), nullable=False)
-    category_id = db.Column(db.Integer, db.ForeignKey('category_list.id'))
+    #category_id = db.Column(db.Integer, db.ForeignKey('category_list.id'))
+    category_id = db.Column(db.Integer, db.ForeignKey('category_list.id'),
+        nullable=False)
+    category = db.relationship('CategoryList',
+        backref=db.backref('expense_list', lazy=True))
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     is_recurring = db.Column(db.Boolean,nullable=False, default=False)
     created_on = db.Column(db.DateTime, nullable=False)
@@ -142,7 +148,7 @@ class ExpenseList(db.Model):
     @property
     def graph_data(self):
         return {
-            'name' : self.name,
+            'name' : self.category_id,
             'value' : self.money_spent,
          }
 
