@@ -118,7 +118,7 @@ class ExpenseList(db.Model):
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(500), unique=True, nullable=False)
-    money_spent = db.Column(db.String(500), nullable=False)
+    money_spent = db.Column(db.Integer, nullable=False)
     #category_id = db.Column(db.Integer, db.ForeignKey('category_list.id'))
     category_id = db.Column(db.Integer, db.ForeignKey('category_list.id'),
         nullable=False)
@@ -148,7 +148,7 @@ class ExpenseList(db.Model):
     @property
     def graph_data(self):
         return {
-            'name' : self.category_id,
+            'name' : self.name,
             'value' : self.money_spent,
          }
 

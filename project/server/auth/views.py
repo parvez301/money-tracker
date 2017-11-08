@@ -5,6 +5,7 @@ import json
 from project.server import bcrypt, db
 from project.server.models import User, BlacklistToken,CategoryList,ExpenseList
 from flask_cors import CORS
+import datetime
 
 auth_blueprint = Blueprint('auth', __name__)
 
@@ -190,7 +191,6 @@ class ExpenseDetailsAPI(MethodView):
     def get(self):
         # get the auth token
         auth_header = request.headers.get('Authorization')
-        print(auth_header)
         if auth_header:
             try:
                 auth_token = auth_header.split(" ")[1]
@@ -206,6 +206,7 @@ class ExpenseDetailsAPI(MethodView):
         if auth_token:
             resp = User.decode_auth_token(auth_token)
             if not isinstance(resp, str):
+                print(resp)
                 query = ExpenseList.query.filter_by(user_id=resp)
                 return make_response(jsonify([i.serialize for i in query.all()])),200
 
@@ -414,6 +415,44 @@ class AddCategoryAPI(MethodView):
         return {'Allow' : 'POST' }, 200, \
         { 'Access-Control-Allow-Origin': '*', \
         'Access-Control-Allow-Methods' : 'PUT,GET,POST' }
+
+
+class ExpenseFilterAPI(MethodView):
+    def get(self):
+        auth_header = request.headers.get('Authorization')
+        if auth_header:
+            try:
+                auth_token = auth_header.split(" ")[1]
+            except IndexError:
+                responseObject = {
+                    'status': 'fail',
+                    'message': 'Bearer token malformed.'
+                }
+                return make_response(jsonify(responseObject)), 401
+        
+        else:
+            auth_token = ''
+        if auth_token:
+            resp = User.decode_auth_token(auth_token)
+            if not isinstance(resp, str):
+                days = request.args.get('filter_type')
+                current_time = datetime.datetime.now()
+                target_time = datetime.datetime.now() - datetime.timedelta(days=int(days))
+                expense_list = ExpenseList.query.filter(ExpenseList.created_on <= current_time).filter(ExpenseList.created_on >= target_time).filter_by(user_id=resp)
+                return make_response(jsonify([i.serialize for i in expense_list.all()])),200
+            responseObject = {
+                'status': 'fail',
+                'message': resp
+            }
+            return make_response(jsonify(responseObject)), 401
+        else:
+            responseObject = {
+                'status': 'fail',
+                'message': 'Provide a valid auth token.'
+            }
+            return make_response(jsonify(responseObject)), 401
+        
+        
 # define the API resources
 registration_view = RegisterAPI.as_view('register_api')
 login_view = LoginAPI.as_view('login_api')
@@ -424,7 +463,7 @@ category_list_view = CategoryListAPI.as_view('category_list_api')
 add_expense_view = AddExpenseAPI.as_view('add_expense_api')
 add_category_view = AddCategoryAPI.as_view('add_category_api')
 graph_data_view = GraphDataAPI.as_view('graph_data_api')
-
+expense_filter_view = ExpenseFilterAPI.as_view('expense_filter_api')
 # add Rules for API Endpoints
 auth_blueprint.add_url_rule(
     '/auth/register',
@@ -471,5 +510,11 @@ auth_blueprint.add_url_rule(
     view_func=add_category_view,
     methods=['POST']
 )
+auth_blueprint.add_url_rule(
+    '/auth/user/expense-filter',
+    view_func=expense_filter_view,
+    methods=['GET']
+)
+
 
 
