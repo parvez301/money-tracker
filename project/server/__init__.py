@@ -2,7 +2,7 @@
 
 import os
 
-from flask import Flask
+from flask import Flask,request
 from flask_bcrypt import Bcrypt
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
@@ -15,7 +15,17 @@ app_settings = os.getenv(
     'project.server.config.DevelopmentConfig'
 )
 app.config.from_object(app_settings)
-
+def add_cors_headers(response):
+    
+    response.headers['Access-Control-Allow-Origin'] = '*'
+    if request.method == 'OPTIONS':
+        response.headers['Access-Control-Allow-Methods'] = 'DELETE, GET, POST, PUT'
+        headers = request.headers.get('Access-Control-Request-Headers')
+        if headers:
+            response.headers['Access-Control-Allow-Headers'] = headers
+            print(response)
+    return response
+app.after_request(add_cors_headers)
 bcrypt = Bcrypt(app)
 db = SQLAlchemy(app)
 print(db)

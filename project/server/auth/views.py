@@ -7,7 +7,7 @@ from project.server.models import User, BlacklistToken,CategoryList,ExpenseList
 from flask_cors import CORS
 
 auth_blueprint = Blueprint('auth', __name__)
-CORS(auth_blueprint)
+
 class RegisterAPI(MethodView):
     """
     User Registration Resource
@@ -188,6 +188,7 @@ class ExpenseDetailsAPI(MethodView):
     def get(self):
         # get the auth token
         auth_header = request.headers.get('Authorization')
+        print(auth_header)
         if auth_header:
             try:
                 auth_token = auth_header.split(" ")[1]
@@ -304,7 +305,10 @@ class AddExpenseAPI(MethodView):
     def post(self):
         # get the post data
         post_data = request.get_json()
-        print(post_data)
+        print(post_data.get('name'))
+        print(post_data.get('money_spent'))
+        print(post_data.get('category_id'))
+        print(post_data.get('is_recurring'))
         auth_header = request.headers.get('Authorization')
         if auth_header:
             try:
@@ -321,7 +325,6 @@ class AddExpenseAPI(MethodView):
             
         if auth_token:
             resp = User.decode_auth_token(auth_token)
-            print(resp)
             if not isinstance(resp, str):
                
                 new_expense = ExpenseList(
@@ -354,6 +357,7 @@ class AddExpenseAPI(MethodView):
            
 class AddCategoryAPI(MethodView):
     def post(self):
+        print("received")
         # get the post data
         post_data = request.get_json()
         print(post_data)
